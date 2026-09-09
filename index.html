@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#111215"><meta name="description" content="Quay mở hòm chọn món cho bữa sáng, trưa, tối và tìm quán gần bạn. Miễn phí, không cần tài khoản.">
+  <title>Ăn gì? — Mở hòm, chốt món.</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./style.css"><script src="./app.js" defer></script>
+</head>
+<body>
+<header class="topbar"><a class="brand" href="./" aria-label="Ăn gì? Trang chủ"><span class="brand-mark">a<span>?</span></span><span>ăn gì<span class="orange">?</span></span></a><span class="edition">FOOD DROP <span>/</span> VOL. 01</span><a class="nav-link" href="#nearby">⌖ <span>Tìm quán gần đây</span></a></header>
+<main>
+  <div class="intro"><div><p class="eyebrow"><span class="tiny-square"></span> DÀNH CHO HỘI “ĂN GÌ CŨNG ĐƯỢC”</p><h1>Để vũ trụ <span>chốt món.</span></h1><p class="lead">Chọn một bữa. Mở một hòm. Hết đau đầu nghĩ món.</p></div><div class="round-stamp" aria-hidden="true">HÔM NAY<br><strong>ĂN NGON</strong><br>NHÉ BẠN! ✳</div></div>
+  <div class="workspace">
+    <section class="game" aria-label="Quay chọn món ăn">
+      <div class="meal-tabs" role="group" aria-label="Chọn bữa ăn">
+        <button data-meal="breakfast" aria-pressed="true"><span class="meal-icon">☀</span><span>Bữa sáng<small>Khởi đầu ngon lành</small></span><span class="tab-number">01</span></button>
+        <button data-meal="lunch" aria-pressed="false"><span class="meal-icon">◒</span><span>Bữa trưa<small>Nạp năng lượng</small></span><span class="tab-number">02</span></button>
+        <button data-meal="dinner" aria-pressed="false"><span class="meal-icon">☾</span><span>Bữa tối<small>Tự thưởng một chút</small></span><span class="tab-number">03</span></button>
+      </div>
+      <div class="case-panel">
+        <div class="case-heading"><span><span class="orange">✳</span> <span id="caseName">HÒM BỮA SÁNG</span></span><button id="sound" class="sound" aria-pressed="false" aria-label="Bật âm thanh">♫ <span>Âm thanh: tắt</span></button></div>
+        <div class="reel-shell"><div class="marker top" aria-hidden="true"></div><div id="reelViewport" class="reel-viewport"><div id="reel" class="reel" aria-hidden="true"></div></div><div class="marker bottom" aria-hidden="true"></div><div class="center-line" aria-hidden="true"></div></div>
+        <div class="spin-controls"><p id="spinStatus" role="status">Món ngon đang chờ. Bạn sẵn sàng chưa?</p><button id="spin" class="primary"><span aria-hidden="true">✳</span> <span id="spinLabel">MỞ HÒM NGAY</span><span class="button-arrow" aria-hidden="true">→</span></button><span class="spin-note">Miễn phí mọi lượt · Mỗi món có cơ hội như nhau</span></div>
+      </div>
+      <div id="result" class="result" hidden aria-live="polite"><span id="resultEmoji" class="result-emoji" aria-hidden="true"></span><div><span class="eyebrow orange">VŨ TRỤ ĐÃ CHỐT</span><h2 id="resultName"></h2><p id="resultDescription"></p></div><a id="resultMaps" class="result-link" target="_blank" rel="noopener noreferrer">Tìm quán <span aria-hidden="true">↗</span></a></div>
+      <section class="collection" aria-labelledby="collectionTitle"><div class="section-title"><h2 id="collectionTitle">Có gì trong hòm?</h2><span id="poolCount">08 MÓN</span></div><div class="legend"><span><i class="common"></i>Quen thuộc</span><span><i class="rare"></i>Đổi vị</span><span><i class="special"></i>Đặc biệt</span></div><div id="foodPool" class="food-pool"></div><p class="pool-note">Màu thẻ chỉ phân nhóm món · Xác suất mỗi món: <strong id="chance">12,5%</strong></p></section>
+    </section>
+    <aside>
+      <section class="nearby" id="nearby" aria-labelledby="nearbyTitle"><div class="food-photo"><img src="./food-cover.jpg" alt="Phở bò, bánh mì và cơm tấm Việt Nam trên bàn tối màu" width="1536" height="1024"><span class="photo-tag">QUAY XONG, ĐI ĂN THÔI.</span></div><div class="nearby-content"><p class="eyebrow orange">TỪ MÀN HÌNH ĐẾN BÀN ĂN</p><h2 id="nearbyTitle">Món đã có.<br>Quán ở đâu?</h2><p>Tìm quán phục vụ món bạn vừa quay, ngay gần bạn.</p><button id="locate" class="location-button">⌖ <span>Dùng vị trí của tôi</span></button><p id="locationStatus" class="location-status" role="status">Chỉ lấy vị trí khi bạn cho phép.</p><div class="divider"><span>hoặc nhập khu vực</span></div><form id="nearbyForm"><label for="area">Bạn muốn ăn ở đâu?</label><input id="area" maxlength="150" placeholder="Ví dụ: Quận 1, TP.HCM" autocomplete="off"><button type="submit" class="maps-button">Tìm trên Google Maps <span aria-hidden="true">↗</span></button></form><p class="maps-note">Kết quả mở trên Google Maps. Sau khi quay, tìm kiếm sẽ dùng đúng món đã chọn.</p></div></section>
+      <div class="little-note"><span aria-hidden="true">✳</span><p>Không có món “trượt”.<br>Chỉ có món bạn chưa thử.</p></div>
+    </aside>
+  </div>
+</main>
+<footer><a class="brand footer-brand" href="./">ăn gì<span class="orange">?</span></a><span>Mở hòm, chốt món. Chúc bạn ngon miệng!</span><span class="footer-demo">DEMO / 2026</span></footer>
+</body></html>
