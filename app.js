@@ -31,19 +31,29 @@ const meals = {
     ['Lẩu','🥘','Một nồi nghi ngút, một buổi tối quây quần.','special']
   ]}
 };
+const extraFoods={"breakfast":[["Bánh mì chảo","🍳","Chảo nóng hơn deadline, chấm bánh mì là hết suy.","rare"],["Bánh mì trứng phô mai","🧀","Ngoài giòn trong kéo sợi. Mood sáng nay: cheesy.","rare"],["Bagel cá hồi","🥯","Ăn sáng kiểu nhân vật chính, họp sớm vẫn có gu.","special"],["Pancake chuối","🥞","Một chồng bánh, một chồng hy vọng hôm nay không trễ.","rare"],["Croissant trứng","🥐","Vỏ bánh nhiều lớp như những tab đang mở trong đầu.","rare"],["Cơm nắm cá ngừ","🍙","Nắm cơm trong tay, tạm nắm quyền kiểm soát cuộc đời.","common"],["Sandwich gà","🥪","Gọn một tay, tay còn lại tắt báo thức lần thứ năm.","common"],["Bún quậy","🍜","Tên là quậy, nhưng ăn xong nhớ ngoan với chiếc bụng.","special"],["Bánh căn","🍳","Team thích bé bé xinh xinh nhưng gọi hai đĩa.","rare"],["Mì trộn trứng lòng đào","🍜","Trộn một vòng, gỡ rối một buổi sáng.","special"]],"lunch":[["Cơm gà sốt phô mai","🧀","Phô mai kéo sợi, kéo luôn mood ra khỏi giờ làm.","special"],["Cơm trộn Hàn Quốc","🍲","Trộn đều trước khi ăn, đừng trộn việc vào giờ nghỉ.","rare"],["Mì cay","🌶️","Chọn độ cay vừa sức. Nước mắt nên dành cho phim.","rare"],["Tokbokki","🍡","Bánh gạo dẻo dai, tình yêu đồ ăn cũng vậy.","rare"],["Kimbap","🍙","Cuộn gọn bữa trưa, không cuộn theo drama.","common"],["Gà rán sốt Hàn","🍗","Giòn một miếng, tiếng deadline nhỏ đi một chút.","rare"],["Burger bò","🍔","Hai tay ôm bánh, tạm buông chuyện overthinking.","common"],["Mì Ý sốt kem","🍝","Hôm nay cho phép bản thân sến như sốt kem.","rare"],["Cơm cà ri Nhật","🍛","Một đĩa cơm ấm, nạp lại thanh năng lượng.","rare"],["Bún đậu mắm tôm","🥢","Món ăn kiểm tra độ hợp cạ của cả nhóm.","special"]],"dinner":[["Lẩu tokbokki","🥘","Cả hội nhúng bánh gạo, nhúng luôn câu chuyện chưa kể.","special"],["Lẩu mala","🌶️","Tê tê đầu lưỡi, tỉnh tỉnh tâm hồn. Chọn cay vừa thôi.","special"],["Ốc sốt trứng muối","🐚","Sốt cuốn hơn tập cuối, nhớ gọi bánh mì chấm.","special"],["Bánh tráng nướng","🍕","Pizza hệ Đà Lạt, ngồi ghế nhựa vẫn rất có vibe.","rare"],["Bánh tráng trộn","🥗","Trộn là dính, dính là gọi thêm. Ăn nhẹ rồi chốt bữa chính nhé.","common"],["Xiên que","🍢","Một xiên để thử, thêm vài xiên vì tình bạn.","common"],["Chân gà sả tắc","🍋","Chua cay giòn giòn, món nhâm nhi của hội kể chuyện.","rare"],["Mì trộn tóp mỡ","🍜","Giòn rụm như tiếng bàn phím lúc chốt kèo ăn.","rare"],["Bánh tráng cuốn bơ","🌯","Cuốn bánh thì dễ, cuốn khỏi cuộc hẹn ăn mới khó.","rare"],["Kem xôi","🍨","Plot twist cuối bữa: nóng lạnh gặp nhau, chiếc bụng vỗ tay.","special"]]};
 const rarityLabels={common:'Quen thuộc',rare:'Đổi vị',special:'Đặc biệt'};
 const $=id=>document.getElementById(id);
 const mealKeys=Object.keys(meals);
 const allFoods=mealKeys.flatMap((meal,mi)=>meals[meal].foods.map((f,fi)=>({id:mi*8+fi,meal,name:f[0],description:f[2],rarity:f[3]})));
+allFoods.forEach(f=>f.emoji=meals[f.meal].foods[f.id%8][1]);
+let nextFoodId=24;
+for(const meal of mealKeys) for(const f of extraFoods[meal]) allFoods.push({id:nextFoodId++,meal,name:f[0],emoji:f[1],description:f[2],rarity:f[3]});
+const FOOD_COUNT=allFoods.length;
 const foodById=id=>allFoods.find(f=>f.id===id);
 const STORE='angi.fooddrop.v2';
 let storageAvailable=true;
-function validIds(value){return Array.isArray(value)?[...new Set(value.filter(id=>Number.isInteger(id)&&id>=0&&id<24))]:[];}
+function validIds(value){return Array.isArray(value)?[...new Set(value.filter(id=>Number.isInteger(id)&&id>=0&&id<FOOD_COUNT))]:[];}
 function readState(){
  let data={};try{data=JSON.parse(localStorage.getItem(STORE)||'{}')||{};}catch{storageAvailable=false;}
  return {excluded:validIds(data.excluded),discovered:validIds(data.discovered),cycles:Object.fromEntries(mealKeys.map(m=>[m,validIds(data.cycles?.[m]).filter(id=>foodById(id).meal===m)])),mode:data.mode==='explore'?'explore':'random',quick:data.quick===true,sound:data.sound!==false,volume:Number.isFinite(data.volume)?Math.max(0,Math.min(100,data.volume)):55,history:Array.isArray(data.history)?data.history.filter(h=>h&&foodById(h.id)&&Number.isFinite(h.time)&&h.time>0).slice(0,20):[],total:Number.isSafeInteger(data.total)&&data.total>=0?data.total:0};
 }
 const state=readState();
+// Keep v2 food IDs and storage key so existing collections survive this update.
+let prior={};try{prior=JSON.parse(localStorage.getItem(STORE)||'{}')||{};}catch{}
+state.xp=Number.isSafeInteger(prior.xp)&&prior.xp>=0?Math.min(prior.xp,1000000000):Math.min(state.total*20,1000000000);
+let sessionSpins=0;
+function rank(xp=state.xp){const level=Math.floor(Math.sqrt(xp/50))+1;const floor=50*(level-1)**2,next=50*level**2;return {level,floor,next,title:level>=20?'Trùm cuối chiếc bụng':level>=10?'Chiến thần chốt kèo':level>=5?'Hệ điều hành ăn uống':level>=3?'Mỏ hỗn bụng hiền':'Tân binh săn món'};}
 const sound=new FoodAudio();
 let currentMeal='breakfast',selectedFood=null,spinning=false,coordinates=null,frame=null,spinTimer=null,toastTimer=null,confettiTimer=null,spinStart=0,spinDuration=5600,lastTick=-1,step=200,targetIndex=38;
 const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -52,7 +62,7 @@ function randomIndex(n){if(!Number.isInteger(n)||n<1)throw new Error('Empty pool
 function enabledFoods(meal=currentMeal){return allFoods.filter(f=>f.meal===meal&&!state.excluded.includes(f.id));}
 function eligibleFoods(meal=currentMeal){const enabled=enabledFoods(meal);if(state.mode!=='explore')return enabled;const remaining=enabled.filter(f=>!state.cycles[meal].includes(f.id));return remaining.length?remaining:enabled;}
 function toast(text){clearTimeout(toastTimer);$('toast').textContent=text;$('toast').hidden=false;toastTimer=setTimeout(()=>$('toast').hidden=true,3400);}
-function photo(node,food){node.style.setProperty('--px',((food.id%4)/3*100)+'%');node.style.setProperty('--py',(Math.floor(food.id/4)/5*100)+'%');node.setAttribute('aria-label',food.name);}
+function photo(node,food){node.classList.toggle('emoji-art',food.id>=24);node.textContent=food.id>=24?food.emoji:'';node.style.setProperty('--px',((food.id%4)/3*100)+'%');node.style.setProperty('--py',(Math.floor(food.id/4)/5*100)+'%');node.setAttribute('aria-label',food.name);}
 function createPhoto(food){const p=document.createElement('div');p.className='dish-photo';p.setAttribute('role','img');photo(p,food);return p;}
 function card(food,compact=false){
  const node=document.createElement(compact?'article':'div');node.className=(compact?'pool-card ':'food-card ')+food.rarity;node.dataset.foodId=food.id;
@@ -77,7 +87,7 @@ function updateControls(){
  $('quick').checked=state.quick;$('quick').disabled=spinning;$('spin').disabled=spinning;$('skip').hidden=!spinning;$('restore').disabled=spinning;
  $('sound').setAttribute('aria-pressed',String(state.sound));$('sound').setAttribute('aria-label',state.sound?'Tắt âm thanh':'Bật âm thanh');$('sound').querySelector('span').textContent=state.sound?'Âm thanh: bật':'Âm thanh: tắt';$('volume').value=state.volume;
  sound.set(state.sound,state.volume/100);
- const count=eligibleFoods().length;$('poolCount').textContent=enabledFoods().length+'/8 ĐANG BẬT';
+ const count=eligibleFoods().length;$('poolCount').textContent=enabledFoods().length+'/'+allFoods.filter(f=>f.meal===currentMeal).length+' ĐANG BẬT';
  $('oddsNote').textContent=count+' món trong lượt tiếp theo · Cơ hội bằng nhau · Miễn phí';
  $('modeHelp').textContent=state.mode==='explore'?'Khám phá: không lặp món trong mỗi vòng. Thử hết các món đang bật để bắt đầu vòng mới.':'Ngẫu nhiên: mỗi món đang bật có cơ hội như nhau. Màu thẻ chỉ phân nhóm món.';
 }
@@ -95,7 +105,10 @@ function changeMeal(meal){
 }
 function level(){const n=state.discovered.length;return n>=24?'Bậc thầy ẩm thực':n>=16?'Nhà thám hiểm vị giác':n>=8?'Tín đồ ăn ngon':'Tân binh ẩm thực';}
 function renderProgress(){
- const n=state.discovered.length;$('discoveryCount').textContent=String(n).padStart(2,'0');$('albumBadge').textContent=n+'/24';$('levelName').textContent=level();$('albumMeter').value=n;$('albumProgress').textContent=n+'/24 món · '+level();$('spinCount').textContent=state.total+' LƯỢT';
+ const r=rank();$('playerLevel').textContent='LV. '+r.level;$('rankTitle').textContent=r.title;
+ $('xpMeter').max=r.next-r.floor;$('xpMeter').value=state.xp-r.floor;$('xpText').textContent=(state.xp-r.floor)+' / '+(r.next-r.floor)+' XP · Còn '+(r.next-state.xp)+' XP lên cấp';
+ $('comboText').textContent=sessionSpins+' lượt trong phiên · '+(sessionSpins%5===0?5:5-sessionSpins%5)+' lượt nữa nhận +30 XP';
+ const n=state.discovered.length;$('albumMeter').max=FOOD_COUNT;$('discoveryCount').textContent=String(n).padStart(2,'0');$('albumBadge').textContent=n+'/'+FOOD_COUNT;$('levelName').textContent=level();$('albumMeter').value=n;$('albumProgress').textContent=n+'/'+FOOD_COUNT+' món · '+level();$('spinCount').textContent=state.total+' LƯỢT';
  $('albumGrid').replaceChildren(...allFoods.map(food=>{const tile=document.createElement('div');const unlocked=state.discovered.includes(food.id);tile.className='album-tile'+(unlocked?'':' locked');tile.append(createPhoto(food));const text=document.createElement('span');text.textContent=(unlocked?'✓ ':'')+food.name;tile.append(text);const status=document.createElement('small');status.textContent=unlocked?'Đã khám phá':'Chưa mở';tile.append(status);return tile;}));
  $('historyEmpty').hidden=state.history.length>0;$('history').replaceChildren(...state.history.slice(0,6).map(h=>{const food=foodById(h.id),li=document.createElement('li');li.append(createPhoto(food));const text=document.createElement('div'),name=document.createElement('strong'),time=document.createElement('small');name.textContent=food.name;time.textContent=new Date(h.time).toLocaleString('vi-VN',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});text.append(name,time);li.append(text);const link=document.createElement('a');link.href=mapsUrl(food);link.target='_blank';link.rel='noopener noreferrer';link.textContent='↗';link.setAttribute('aria-label','Tìm quán '+food.name);li.append(link);return li;}));
 }
@@ -109,11 +122,16 @@ function finishSpin(){
  cancelAnimationFrame(frame);clearTimeout(spinTimer);measure();place(targetIndex);$('reel').children[targetIndex].classList.add('landed');spinning=false;document.body.classList.remove('spinning');
  const isNew=!state.discovered.includes(selectedFood.id);if(isNew)state.discovered.push(selectedFood.id);
  if(state.mode==='explore'){const enabled=enabledFoods();if(!enabled.some(f=>!state.cycles[currentMeal].includes(f.id)))state.cycles[currentMeal]=[];state.cycles[currentMeal].push(selectedFood.id);}
+ const beforeLevel=rank().level;sessionSpins++;
+ const gained=20+(isNew?15:0)+(sessionSpins%5===0?30:0);
+ state.xp=Math.min(1000000000,state.xp+gained);
+ $('xpReward').textContent='+'+gained+' XP'+(isNew?' · Món mới +15':'')+(sessionSpins%5===0?' · Chuỗi 5 lượt +30':'')+(rank().level>beforeLevel?' · LÊN CẤP '+rank().level+'!':'');
  state.total++;state.history.unshift({id:selectedFood.id,time:Date.now()});state.history=state.history.slice(0,20);save();
  $('spinLabel').textContent='MỞ THÊM MỘT HÒM';$('spinStatus').textContent='Chốt món: '+selectedFood.name+'!';
  photo($('resultPhoto'),selectedFood);$('resultTag').textContent=isNew?'✦ MÓN MỚI TRONG BỘ SƯU TẬP':'VŨ TRỤ ĐÃ CHỐT';$('resultName').textContent=selectedFood.name;$('resultDescription').textContent=selectedFood.description;$('result').hidden=false;$('result').classList.toggle('special-result',selectedFood.rarity==='special');
  photo($('nearbyPhoto'),selectedFood);$('nearbyMeal').textContent='Tìm '+selectedFood.name+' gần bạn.';updateMapLink();renderPool();renderProgress();sound.win(selectedFood.rarity==='special');celebrate(selectedFood.rarity==='special');
- if(isNew&&[8,16,24].includes(state.discovered.length))toast('Mở khóa danh hiệu: '+level()+'!');
+ if(rank().level>beforeLevel)toast('🎉 Lên cấp '+rank().level+' · '+rank().title);
+ else if(isNew&&[8,16,24].includes(state.discovered.length))toast('Mở khóa danh hiệu: '+level()+'!');
 }
 function spin(){
  if(spinning)return;sound.unlock();spinning=true;$('result').hidden=true;document.body.classList.add('spinning');
@@ -138,7 +156,7 @@ document.querySelectorAll('[data-meal]').forEach(b=>b.addEventListener('click',(
 document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{if(spinning)return;state.mode=b.dataset.mode;save();renderPool();if(!selectedFood)paintIdle();}));
 $('spin').addEventListener('click',spin);$('skip').addEventListener('click',finishSpin);
 $('quick').addEventListener('change',()=>{state.quick=$('quick').checked;save();});
-$('restore').addEventListener('click',()=>{if(spinning)return;state.excluded=state.excluded.filter(id=>foodById(id).meal!==currentMeal);save();renderPool();if(!selectedFood)paintIdle();toast('Đã bật lại 8 món trong hòm này.');});
+$('restore').addEventListener('click',()=>{if(spinning)return;state.excluded=state.excluded.filter(id=>foodById(id).meal!==currentMeal);save();renderPool();if(!selectedFood)paintIdle();toast('Đã bật lại tất cả món trong hòm này.');});
 $('sound').addEventListener('click',()=>{state.sound=!state.sound;updateControls();if(state.sound){sound.unlock();setTimeout(()=>sound.tap(),60);}save();});
 $('volume').addEventListener('input',()=>{state.volume=Number($('volume').value);sound.set(state.sound,state.volume/100);save();});
 $('albumOpen').addEventListener('click',()=>{$('album').showModal();});$('albumClose').addEventListener('click',()=>$('album').close());
