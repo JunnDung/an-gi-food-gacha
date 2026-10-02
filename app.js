@@ -112,7 +112,7 @@ function updateControls(){
  $('oddsNote').textContent=count+' món · '+rarityPool().map(g=>rarityLabels[g.rarity]+' '+(g.weight/rarityPool().reduce((s,x)=>s+x.weight,0)*100).toLocaleString('vi-VN',{maximumFractionDigits:1})+'%').join(' · ');
  $('modeHelp').textContent=state.mode==='explore'?'Khám phá: không lặp món; nhóm hết món sẽ được bỏ khỏi lượt quay và tỉ lệ nhóm còn lại tăng tương ứng. Cuối vòng có thể chỉ còn món đặc biệt.':'Tỉ lệ nhóm gốc: Quen thuộc 70% · Đổi vị 25% · Đặc biệt 5%. Chia đều trong nhóm; nếu bỏ hết một nhóm, tỉ lệ được phân bổ theo trọng số nhóm còn lại.';
 }
-function renderPool(){$('foodPool').replaceChildren(...allFoods.filter(f=>f.meal===currentMeal).map(f=>card(f,true)));updateControls();}
+function renderPool(){$('foodPool').replaceChildren(...allFoods.filter(f=>f.meal===currentMeal).sort((a,b)=>({common:0,rare:1,special:2}[a.rarity]-{common:0,rare:1,special:2}[b.rarity])||a.id-b.id).map(f=>card(f,true)));updateControls();}
 function toggleFood(food){
  if(spinning)return;
  const excluded=state.excluded.includes(food.id);
