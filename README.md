@@ -1,8 +1,8 @@
-# Ăn gì? — Food Drop Vol. 02
+# Ăn gì? — Food Drop Vol. 04
 
 [Mở website](https://junndung.github.io/an-gi-food-gacha/)
 
-Web gacha chọn đồ ăn tiếng Việt: 3 bữa, 24 món, ảnh chụp thật có ghi nguồn.
+Web gacha chọn đồ ăn tiếng Việt: 3 bữa, 60 món, ảnh chụp thật có ghi nguồn.
 
 ## Tính năng
 
@@ -38,3 +38,8 @@ GPS yêu cầu HTTPS/localhost và chỉ hỏi sau khi bấm nút. Tọa độ c
 Kiểm tra logic: 237 lượt quay, các vòng không lặp, loại món/giữ món cuối, khớp thẻ trúng, chống bấm kép, bỏ qua hiệu ứng, dữ liệu lưu lỗi hoặc bị chặn, bộ sưu tập/lịch sử, truy vấn Maps và đủ 24 nguồn ảnh.
 
 Kiểm tra trình duyệt: quay thường/quay nhanh, bộ sưu tập, lưu sau reload, nguồn tìm quán; bố cục 390px và 1360px. Không có lỗi JavaScript trong các luồng đã thử. Quyền GPS thật phụ thuộc thiết bị và trình duyệt của người dùng.
+
+## Vol. 04
+- 60 lựa chọn với ảnh chụp thật, tác giả và giấy phép trong credits.html. Ảnh thương hiệu là ảnh tham khảo, có thể khác thực đơn tại Việt Nam.
+- Jollibee (gà, mì Ý), Dookki, KFC, Lotteria, Pizza Hut; Google Maps tìm đúng chuỗi.
+- XP: 20 mỗi lượt, 15 cho món mới, 30 cho mỗi 5 lượt trong phiên; cấp độ và bộ sưu tập được lưu trên thiết bị.

@@ -39,6 +39,9 @@ const allFoods=mealKeys.flatMap((meal,mi)=>meals[meal].foods.map((f,fi)=>({id:mi
 allFoods.forEach(f=>f.emoji=meals[f.meal].foods[f.id%8][1]);
 let nextFoodId=24;
 for(const meal of mealKeys) for(const f of extraFoods[meal]) allFoods.push({id:nextFoodId++,meal,name:f[0],emoji:f[1],description:f[2],rarity:f[3]});
+allFoods.push(...[{"id":54,"meal":"lunch","name":"Jollibee · Gà Giòn Vui Vẻ","brand":"Jollibee","description":"Gà giòn vui vẻ, cả hội bớt suy. Chốt kèo đi ăn thôi!","rarity":"special"},{"id":55,"meal":"lunch","name":"Jollibee · Mì Ý Jolly","brand":"Jollibee","description":"Mì Ý sốt ngọt quen thuộc. Một vé về tuổi thơ, không cần xin nghỉ phép.","rarity":"special"},{"id":56,"meal":"dinner","name":"Dookki · Buffet tokbokki","brand":"Dookki","description":"Tự pha sốt, tự chọn topping. Hôm nay bạn là bếp trưởng của hội bạn thân.","rarity":"special"},{"id":57,"meal":"lunch","name":"KFC · Gà rán","brand":"KFC","description":"Giòn tan một miếng, chốt nhanh một kèo. Rủ đồng đội chia phần nào.","rarity":"special"},{"id":58,"meal":"dinner","name":"Lotteria · Gà rán","brand":"Lotteria","description":"Kèo gà rán cho buổi tối lười nghĩ. Bàn ăn có bạn là đủ vui.","rarity":"special"},{"id":59,"meal":"dinner","name":"Pizza Hut · Pizza","brand":"Pizza Hut","description":"Chia pizza, chia chuyện vui. Miếng cuối để ai thì oẳn tù tì nhé.","rarity":"special"}]);
+const photoNotes={"25":"Ảnh minh họa sandwich trứng phô mai.","33":"Ảnh minh họa mì trứng; cách chế biến có thể khác.","34":"Ảnh minh họa set gà phô mai Hàn Quốc.","46":"Ảnh minh họa ốc hương sốt me; sốt trứng muối có màu khác.","50":"Ảnh minh họa chân gà nướng; món sả tắc có cách chế biến khác.","51":"Ảnh minh họa mì trộn tương đen.","52":"Ảnh minh họa nguyên liệu bánh tráng cuốn.","55":"Ảnh minh họa mì Ý kiểu Philippines, không phải ảnh sản phẩm Jollibee.","56":"Ảnh minh họa lẩu tokbokki, không phải ảnh tại Dookki.","59":"Ảnh minh họa pizza, không phải ảnh sản phẩm Pizza Hut."};
+allFoods.forEach(f=>f.photoNote=photoNotes[f.id]||'Ảnh chụp minh họa món ăn.');
 const FOOD_COUNT=allFoods.length;
 const foodById=id=>allFoods.find(f=>f.id===id);
 const STORE='angi.fooddrop.v2';
@@ -62,12 +65,16 @@ function randomIndex(n){if(!Number.isInteger(n)||n<1)throw new Error('Empty pool
 function enabledFoods(meal=currentMeal){return allFoods.filter(f=>f.meal===meal&&!state.excluded.includes(f.id));}
 function eligibleFoods(meal=currentMeal){const enabled=enabledFoods(meal);if(state.mode!=='explore')return enabled;const remaining=enabled.filter(f=>!state.cycles[meal].includes(f.id));return remaining.length?remaining:enabled;}
 function toast(text){clearTimeout(toastTimer);$('toast').textContent=text;$('toast').hidden=false;toastTimer=setTimeout(()=>$('toast').hidden=true,3400);}
-function photo(node,food){node.classList.toggle('emoji-art',food.id>=24);node.textContent=food.id>=24?food.emoji:'';node.style.setProperty('--px',((food.id%4)/3*100)+'%');node.style.setProperty('--py',(Math.floor(food.id/4)/5*100)+'%');node.setAttribute('aria-label',food.name);}
+function photo(node,food){
+ const extra=food.id>=24,index=extra?food.id-24:food.id,columns=extra?6:4;
+ node.classList.toggle('extra-photo',extra);node.textContent='';
+ node.style.setProperty('--px',((index%columns)/(columns-1)*100)+'%');node.style.setProperty('--py',(Math.floor(index/columns)/5*100)+'%');node.setAttribute('aria-label',food.name);node.title=food.photoNote||food.name;
+}
 function createPhoto(food){const p=document.createElement('div');p.className='dish-photo';p.setAttribute('role','img');photo(p,food);return p;}
 function card(food,compact=false){
  const node=document.createElement(compact?'article':'div');node.className=(compact?'pool-card ':'food-card ')+food.rarity;node.dataset.foodId=food.id;
  node.append(createPhoto(food));const info=document.createElement('div');info.className='card-info';const name=document.createElement('strong');name.textContent=food.name;info.append(name);
- const detail=document.createElement('small');detail.textContent=rarityLabels[food.rarity];info.append(detail);node.append(info);
+ const detail=document.createElement('small');detail.textContent=food.brand?'✦ Kèo '+food.brand:rarityLabels[food.rarity];info.append(detail);node.append(info);
  if(compact){
   const enabled=!state.excluded.includes(food.id),eligible=eligibleFoods().some(f=>f.id===food.id);
   node.classList.toggle('excluded',!enabled);
@@ -128,8 +135,8 @@ function finishSpin(){
  $('xpReward').textContent='+'+gained+' XP'+(isNew?' · Món mới +15':'')+(sessionSpins%5===0?' · Chuỗi 5 lượt +30':'')+(rank().level>beforeLevel?' · LÊN CẤP '+rank().level+'!':'');
  state.total++;state.history.unshift({id:selectedFood.id,time:Date.now()});state.history=state.history.slice(0,20);save();
  $('spinLabel').textContent='MỞ THÊM MỘT HÒM';$('spinStatus').textContent='Chốt món: '+selectedFood.name+'!';
- photo($('resultPhoto'),selectedFood);$('resultTag').textContent=isNew?'✦ MÓN MỚI TRONG BỘ SƯU TẬP':'VŨ TRỤ ĐÃ CHỐT';$('resultName').textContent=selectedFood.name;$('resultDescription').textContent=selectedFood.description;$('result').hidden=false;$('result').classList.toggle('special-result',selectedFood.rarity==='special');
- photo($('nearbyPhoto'),selectedFood);$('nearbyMeal').textContent='Tìm '+selectedFood.name+' gần bạn.';updateMapLink();renderPool();renderProgress();sound.win(selectedFood.rarity==='special');celebrate(selectedFood.rarity==='special');
+ photo($('resultPhoto'),selectedFood);$('resultTag').textContent=isNew?'✦ MÓN MỚI TRONG BỘ SƯU TẬP':'VŨ TRỤ ĐÃ CHỐT';$('resultName').textContent=selectedFood.name;$('resultDescription').textContent=selectedFood.description+' '+selectedFood.photoNote+(selectedFood.brand?' Ảnh tham khảo; thực đơn có thể khác theo chi nhánh.':'');$('result').hidden=false;$('result').classList.toggle('special-result',selectedFood.rarity==='special');
+ photo($('nearbyPhoto'),selectedFood);$('nearbyMeal').textContent='Tìm '+(selectedFood.brand||selectedFood.name)+' gần bạn.';updateMapLink();renderPool();renderProgress();sound.win(selectedFood.rarity==='special');celebrate(selectedFood.rarity==='special');
  if(rank().level>beforeLevel)toast('🎉 Lên cấp '+rank().level+' · '+rank().title);
  else if(isNew&&[8,16,24].includes(state.discovered.length))toast('Mở khóa danh hiệu: '+level()+'!');
 }
@@ -150,7 +157,7 @@ function spin(){
  }
  frame=requestAnimationFrame(animate);spinTimer=setTimeout(finishSpin,spinDuration+250);
 }
-function mapsUrl(food=selectedFood){const name=food?food.name:'quán ăn',area=$('area').value.trim(),place=area||(coordinates?coordinates.latitude+', '+coordinates.longitude:'đây');return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(name+(area?' tại ':' gần ')+place);}
+function mapsUrl(food=selectedFood){const name=food?(food.brand||food.name):'quán ăn',area=$('area').value.trim(),place=area||(coordinates?coordinates.latitude+', '+coordinates.longitude:'đây');return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(name+(area?' tại ':' gần ')+place);}
 function updateMapLink(){$('resultMaps').href=mapsUrl();}
 document.querySelectorAll('[data-meal]').forEach(b=>b.addEventListener('click',()=>changeMeal(b.dataset.meal)));
 document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{if(spinning)return;state.mode=b.dataset.mode;save();renderPool();if(!selectedFood)paintIdle();}));
