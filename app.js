@@ -64,6 +64,20 @@ function save(){try{localStorage.setItem(STORE,JSON.stringify(state));}catch{sto
 function randomIndex(n){if(!Number.isInteger(n)||n<1)throw new Error('Empty pool');const a=new Uint32Array(1),limit=Math.floor(4294967296/n)*n;do{crypto.getRandomValues(a);}while(a[0]>=limit);return a[0]%n;}
 function enabledFoods(meal=currentMeal){return allFoods.filter(f=>f.meal===meal&&!state.excluded.includes(f.id));}
 function eligibleFoods(meal=currentMeal){const enabled=enabledFoods(meal);if(state.mode!=='explore')return enabled;const remaining=enabled.filter(f=>!state.cycles[meal].includes(f.id));return remaining.length?remaining:enabled;}
+// Weights apply to rarity groups, then uniformly to eligible dishes in that group.
+const rarityWeights={common:70,rare:25,special:5};
+function rarityPool(foods=eligibleFoods()){
+ return Object.entries(rarityWeights).map(([rarity,weight])=>({rarity,weight,foods:foods.filter(f=>f.rarity===rarity)})).filter(g=>g.foods.length);
+}
+function foodProbability(food,foods=eligibleFoods()){
+ const groups=rarityPool(foods),group=groups.find(g=>g.foods.some(f=>f.id===food.id));
+ return group?group.weight/groups.reduce((sum,g)=>sum+g.weight,0)/group.foods.length:0;
+}
+function chooseFood(foods,draw=randomIndex){
+ const groups=rarityPool(foods);let ticket=draw(groups.reduce((sum,g)=>sum+g.weight,0));
+ for(const group of groups){if(ticket<group.weight)return group.foods[draw(group.foods.length)];ticket-=group.weight;}
+ throw new Error('Invalid rarity ticket');
+}
 function toast(text){clearTimeout(toastTimer);$('toast').textContent=text;$('toast').hidden=false;toastTimer=setTimeout(()=>$('toast').hidden=true,3400);}
 function photo(node,food){
  const extra=food.id>=24,index=extra?food.id-24:food.id,columns=extra?6:4;
@@ -79,7 +93,7 @@ function card(food,compact=false){
   const enabled=!state.excluded.includes(food.id),eligible=eligibleFoods().some(f=>f.id===food.id);
   node.classList.toggle('excluded',!enabled);
   const toggle=document.createElement('button');toggle.className='food-toggle';toggle.type='button';toggle.textContent=enabled?'✓':'+';toggle.setAttribute('aria-label',(enabled?'Bỏ món ':'Bật món ')+food.name);toggle.setAttribute('aria-pressed',String(enabled));toggle.disabled=spinning;toggle.addEventListener('click',()=>toggleFood(food));node.append(toggle);
-  const badge=document.createElement('span');badge.className='card-odds';badge.textContent=!enabled?'Đã bỏ':!eligible?'Đã quay vòng này':(100/eligibleFoods().length).toLocaleString('vi-VN',{maximumFractionDigits:1})+'%';node.append(badge);
+  const badge=document.createElement('span');badge.className='card-odds';badge.textContent=!enabled?'Đã bỏ':!eligible?'Đã quay vòng này':(100*foodProbability(food)).toLocaleString('vi-VN',{maximumFractionDigits:1})+'%';node.append(badge);
   if(state.discovered.includes(food.id)){const found=document.createElement('span');found.className='found-badge';found.textContent='✦';found.title='Đã có trong bộ sưu tập';node.append(found);}
  }
  return node;
@@ -95,8 +109,8 @@ function updateControls(){
  $('sound').setAttribute('aria-pressed',String(state.sound));$('sound').setAttribute('aria-label',state.sound?'Tắt âm thanh':'Bật âm thanh');$('sound').querySelector('span').textContent=state.sound?'Âm thanh: bật':'Âm thanh: tắt';$('volume').value=state.volume;
  sound.set(state.sound,state.volume/100);
  const count=eligibleFoods().length;$('poolCount').textContent=enabledFoods().length+'/'+allFoods.filter(f=>f.meal===currentMeal).length+' ĐANG BẬT';
- $('oddsNote').textContent=count+' món trong lượt tiếp theo · Cơ hội bằng nhau · Miễn phí';
- $('modeHelp').textContent=state.mode==='explore'?'Khám phá: không lặp món trong mỗi vòng. Thử hết các món đang bật để bắt đầu vòng mới.':'Ngẫu nhiên: mỗi món đang bật có cơ hội như nhau. Màu thẻ chỉ phân nhóm món.';
+ $('oddsNote').textContent=count+' món · '+rarityPool().map(g=>rarityLabels[g.rarity]+' '+(g.weight/rarityPool().reduce((s,x)=>s+x.weight,0)*100).toLocaleString('vi-VN',{maximumFractionDigits:1})+'%').join(' · ');
+ $('modeHelp').textContent=state.mode==='explore'?'Khám phá: không lặp món; nhóm hết món sẽ được bỏ khỏi lượt quay và tỉ lệ nhóm còn lại tăng tương ứng. Cuối vòng có thể chỉ còn món đặc biệt.':'Tỉ lệ nhóm gốc: Quen thuộc 70% · Đổi vị 25% · Đặc biệt 5%. Chia đều trong nhóm; nếu bỏ hết một nhóm, tỉ lệ được phân bổ theo trọng số nhóm còn lại.';
 }
 function renderPool(){$('foodPool').replaceChildren(...allFoods.filter(f=>f.meal===currentMeal).map(f=>card(f,true)));updateControls();}
 function toggleFood(food){
@@ -142,8 +156,8 @@ function finishSpin(){
 }
 function spin(){
  if(spinning)return;sound.unlock();spinning=true;$('result').hidden=true;document.body.classList.add('spinning');
- const foods=eligibleFoods();selectedFood=foods[randomIndex(foods.length)];
- const tiles=Array.from({length:46},()=>foods[randomIndex(foods.length)]);tiles[targetIndex]=selectedFood;
+ const foods=eligibleFoods();selectedFood=chooseFood(foods);
+ const tiles=Array.from({length:46},()=>chooseFood(foods));tiles[targetIndex]=selectedFood;
  $('reel').replaceChildren(...tiles.map(f=>card(f)));measure();place(3);renderPool();
  $('spinStatus').textContent='Vũ trụ đang chọn… đợi món ngon xuất hiện!';$('spinLabel').textContent='ĐANG MỞ HÒM…';
  spinDuration=state.quick?1600:5600;spinStart=performance.now();lastTick=3;

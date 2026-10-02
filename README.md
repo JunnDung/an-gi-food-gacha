@@ -7,7 +7,7 @@ Web gacha chọn đồ ăn tiếng Việt: 3 bữa, 60 món, ảnh chụp thật
 ## Tính năng
 
 - Mở hòm với dải thẻ giảm tốc, tiếng kim qua từng thẻ, âm mở khóa và hợp âm báo kết quả.
-- Chế độ Ngẫu nhiên: xác suất bằng nhau giữa các món đang bật.
+- Chế độ Ngẫu nhiên: tỉ lệ nhóm Quen thuộc 70%, Đổi vị 25%, Đặc biệt 5%; chia đều trong từng nhóm. Nhóm không còn món hợp lệ được bỏ và trọng số nhóm còn lại được chuẩn hóa.
 - Chế độ Khám phá: mỗi món chỉ xuất hiện một lần trong một vòng; vòng mới bắt đầu sau khi thử hết các món đang bật. Bộ sưu tập độc lập với vòng quay.
 - Bỏ món không thích; luôn giữ ít nhất một món mỗi bữa. Xác suất lượt tiếp theo hiển thị trên từng thẻ.
 - Quay nhanh, bỏ qua hiệu ứng (giữ nguyên kết quả), âm lượng và tắt/bật âm thanh.
